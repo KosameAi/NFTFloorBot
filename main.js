@@ -5,26 +5,26 @@ require("dotenv").config()
 const client = new Discord.Client({ 
     intents: [
         "GUILDS",
-        "GUILD_MESSAGES"
+        "GUILD_MESSAGES",
+        "GUILD_MEMBERS"
     ]
  })
 
-const prefix = '$'
+let bot = {
+    client,
+    prefix: "$",
+    owners:["190996262500302849"]
+}
 
-client.once('ready', () => {
-    console.log('NFTFloorBot is online!');
-});
+client.commands = new Discord.Collection()
+client.events = new Discord.Collection()
 
-client.on('messageCreate', (message) =>{
-    if(!message.content.startsWith(prefix) || message.author.bot) return;
+client.loadEvents = (bot, reload) => require("./handlers/events")(bot, reload)
+client.loadCommands = (bot, reload) => require("./handlers/commands")(bot, reload)
 
-    const args = message.content.slice(prefix.length).split(/ +/);
-    const command = args.shift().toLowerCase();
+client.loadEvents(bot, false)
+client.loadCommands(bot, false)
 
-    if (command === 'floor'){
-        message.channel.send('pong!');
-    }
-});
-
+module.exports = bot
 
 client.login(process.env.TOKEN);
