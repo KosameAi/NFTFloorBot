@@ -3,7 +3,8 @@ let statsByNameUrl = (name) => `https://api-mainnet.magiceden.dev/v2/collections
 
 async function magicEdenStats(name) {
     try {
-      const response = await axios.get(statsByNameUrl(name));
+      collection = (name.toString()).toLowerCase();
+      const response = await axios.get(statsByNameUrl(collection));
       const stringFloor = JSON.stringify(response.data.floorPrice);
       return (parseInt(stringFloor)/1000000000).toString()
     } catch (error) {
@@ -19,6 +20,6 @@ module.exports = {
     devOnly: false,
     run: async ({client, message, args}) => {
         let floorPriceValue = await magicEdenStats(args);
-        message.reply(floorPriceValue);
+        message.reply(floorPriceValue + " SOL");
     }
 }
