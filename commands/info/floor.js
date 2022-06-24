@@ -1,24 +1,25 @@
 const axios = require('axios');
 const cheerio = require('cheerio')
 const { MessageEmbed } = require('discord.js');
+require("dotenv").config();
 
 //Takes discord message array and outputs a string in format of underscored and lowercased 'okay_bears'
-const underscoreCollectionName = (collectionName) => {
-  if (collectionName.length > 1) {
-    outputName = collectionName.join("_").toLowerCase();
+const underscoreCollectionName = (discordInput) => {
+  if (discordInput.length > 1) {
+    outputName = discordInput.join("_").toLowerCase();
 } else {
-    outputName = collectionName[0].toLowerCase()
+    outputName = discordInput[0].toLowerCase()
 } return outputName
 }
 
 //Takes collection name with underscores and outputs a collection page URL
 const generateCollectionUrl = (collectionName) => {
-  return `https://magiceden.io/marketplace/${outputName}`
+  return `https://magiceden.io/marketplace/${collectionName}`
 };
 
 //Takes collection name with underscores and outputs a collection/stats API URL for MagicEden
 const generateStatsApiUrl = (collectionName) => {
-return `https://api-mainnet.magiceden.dev/v2/collections/${outputName}/stats`
+return `https://api-mainnet.magiceden.dev/v2/collections/${collectionName}/stats?api_key=${process.env.MAGIC_EDEN_API_KEY}`
 };
 
 //Takes collection url and gets collection image URL
@@ -47,7 +48,7 @@ async function magicEdenStats(discordInput) {
     const stringFloor = JSON.stringify(response.data.floorPrice);
     const stringListedCount = JSON.stringify(response.data.listedCount);
       if (stringFloor === undefined) {
-        return "Fix spelling | Maybe ME or Solana is shitting itself"
+        return undefined;
     } else {
       const meAPIData ={
         collection : (collection.replace(/_/g, " "))
@@ -73,6 +74,24 @@ module.exports = {
         const returnApiData = await magicEdenStats(args)
         //const iconUrl = await generateCollectionImageUrl(generateCollectionUrl(underscoreCollectionName(args))
 
+        if (returnApiData === undefined) { 
+          const errEmbed = new MessageEmbed(returnApiData)
+          .setColor('#0099ff')
+          .setAuthor({ name: 'NFT Floor Bot', iconURL: 
+          'https://substackcdn.com/image/fetch/w_256,h_256,c_fill,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fbucketeer-e05bbc84-baa3-437e-9518-adb32be77984.s3.amazonaws.com%2Fpublic%2Fimages%2Fdbf53918-04a8-40cf-b063-0769309bc98b_800x800.png', 
+          url: 'https://twitter.com/KosameAi' })
+          .setThumbnail('https://i.imgur.com/vhk97dph.jpg')
+          .addFields(
+            { name: "Error", 
+              value: "Please fix spelling of collection,"},
+            { name: "Formatting", value: "Formatting must match Magic Eden collection name \n (ex. magicticket, not magic_ticket)", inline: true }
+          )
+          //.setImage(iconUrl)
+          .setTimestamp()
+          .setFooter({ text: 'Made by @KosameAi', iconURL: 'https://i.imgur.com/vhk97dph.jpg'});
+          message.reply({embeds : [errEmbed]});
+        } else {
+
         const embed = new MessageEmbed(returnApiData)
           .setColor('#0099ff')
           .setAuthor({ name: 'NFT Floor Bot', iconURL: 
@@ -92,5 +111,6 @@ module.exports = {
           .setFooter({ text: 'Made by @KosameAi', iconURL: 'https://i.imgur.com/vhk97dph.jpg'});
 
         message.reply({embeds : [embed]});
+      }
     }
 }
